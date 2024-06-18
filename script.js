@@ -1,63 +1,52 @@
-function ship(length) {
-    let hitCount = 0;
-    return {
-        length: length,
-        //position: position,
-        hit: function() {
-            hitCount ++;
-            return hitCount
-        },
-        isSunk: function() {
-            if (hitCount >= length) {
-                return true;
+export function gameboard() {
+    const board = Array(10).fill(null).map(() => Array(10).fill(null));
+
+    function placeShip(start, length, orientation) {
+        let [x, y] = start;
+        
+        if (orientation === 'horizontal') {
+            if (y + length > 10) throw new Error('Ship out of bounds');
+            for (let i = 0; i < length; i++) {
+                if (board[x][y + i] !== null) throw new Error('Overlapping ships');
+                board[x][y + i] = { ship: newShip };
             }
-            else {
-                return false;
+        } else if (orientation === 'vertical') {
+            if (x + length > 10) throw new Error('Ship out of bounds');
+            for (let i = 0; i < length; i++) {
+                if (board[x + i][y] !== null) throw new Error('Overlapping ships');
+                board[x + i][y] = { ship: newShip };
             }
+        } else {
+            throw new Error('Invalid orientation');
         }
     }
-}
 
-function gameboard() {
-    const board = Array(10).fill(null).map(() => Array(10).fill(null));
+    function placeDefaultShips() {
+        try {
+            placeShip([0, 0], 5, 'horizontal'); 
+            placeShip([2, 3], 4, 'vertical');   
+            placeShip([5, 5], 3, 'horizontal'); 
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    placeDefaultShips();
+
     return {
         board: board,
-        placeShip: function(start, length, orientation) {
-            let [x, y] = start;
-            const newShip = ship(length);
-            
-            if (orientation === 'horizontal') {
-                if (y + length > 10) throw new Error('Ship out of bounds');
-                for (let i = 0; i < length; i++) {
-                    if (board[x][y + i] !== null) throw new Error('overlaping');
-                    board[x][y + i].newShip;
+        placeShip: placeShip,
+        receiveAttack: function(attackCoords) {
+            let [x, y] = attackCoords;
+            if (x >= 0 && x < 10 && y >= 0 && y < 10) {
+                if (board[x][y] === null) {
+                    board[x][y] = 'miss';
+                } else if (board[x][y].ship) {
+                    board[x][y].ship.hit();
                 }
-            }
-            else if (orientation === 'vertical') {
-                if (x + length > 10) throw new Error('Ship out of bounds');
-                for (let i = 0; i < length; i++) {
-                    if (board[x + i][y] !== null) throw new Error('overlaping');
-                    board[x + i][y].newShip;
-                }
-            }
-            else {
-                throw new Error('Invalid orientation')
-            }
-        },
-        recieveAttack: function(attackCords) {
-            let [x, y] = attackCords;
-            if (x >= 0 && x <= 10 && y <= 0 && y <= 10) {
-                if (board[x, y] === null) {
-                    board[x, y] = 'miss';
-                }
-                else if (board[x, y] === Object) {
-                    board[x, y].hit();
-                    isSunk();
-                }
-            }
-            else {
-                throw new Error('Invalid cordinates'); 
+            } else {
+                throw new Error('Invalid coordinates');
             }
         }
-    }
+    };
 }
